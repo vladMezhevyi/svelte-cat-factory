@@ -19,6 +19,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<title>Cat Factory</title>
 </svelte:head>
 
 <QueryClientProvider client={queryClient}>

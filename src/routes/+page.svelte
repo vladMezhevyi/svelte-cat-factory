@@ -18,6 +18,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>Cat Factory</title>
+</svelte:head>
+
 <section class="container">
 	<article class="info">
 		<p>A random cat, every time.</p>
