@@ -1,47 +1,74 @@
 <script lang="ts">
-	import { PUBLIC_API_URL } from '$env/static/public';
+	import { invalidate } from '$app/navigation';
+	import { CAT_RANDOM_DEP } from '$lib/constants/deps.js';
 
-	const catUrl = `${PUBLIC_API_URL}/cat`;
-	// import { invalidate } from '$app/navigation';
-	// import type { Cat } from '$lib/types/cat.js';
+	const { data } = $props();
+	let loading = $state<boolean>(false);
 
-	// const { data } = $props();
-
-	// let cat = $state<Cat | null>(null);
-	// let loading = $state<boolean>(false);
-	// let error = $state<Error | null>(null);
-
-	// $effect(() => {
-	// 	cat = null;
-	// 	loading = true;
-	// 	error = null;
-
-	// 	data.cat
-	// 		.then((response) => {
-	// 			console.log('Response: ', response);
-	// 			cat = response;
-	// 		})
-	// 		.catch((err) => (error = err))
-	// 		.finally(() => (loading = false));
-	// });
-
-	// function reload(): void {
-	// 	invalidate('cat:random');
-	// }
+	const reload = (): void => {
+		loading = true;
+		invalidate(CAT_RANDOM_DEP).finally(() => (loading = false));
+	};
 </script>
 
-<h1>Cat</h1>
+<section class="container">
+	<article class="info">
+		<p>A random cat, every time.</p>
+		<p>Because the internet can never have enough cats.</p>
 
-<img src={catUrl} alt="Random cat" />
+		<div class="stats">
+			<span>🐾</span>
+			<b>12,384</b>
+			<span>cats available</span>
+		</div>
+	</article>
 
-<!-- <button type="button" disabled={loading} onclick={reload}>Reload</button>
+	<div class="media">
+		<div class="image-wrapper">
+			{#if data.cat}
+				<img src={data.cat.url} alt="Random cat" />
+			{:else}
+				<span>Failed to load an image</span>
+			{/if}
+		</div>
 
-{#if error}
-	<div>Error - ${error.message}</div>
-{:else if !cat}
-	<div>Loading...</div>
-{:else}
-	<div>
-		<img src={cat.url} alt="A random cat" />
+		<button type="button" class="reload-btn" disabled={loading} onclick={reload}>
+			🔄 New cat
+		</button>
 	</div>
-{/if} -->
+</section>
+
+<style>
+	.container {
+		flex: 1;
+		padding: 1rem;
+
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 2rem;
+		align-items: center;
+		justify-items: center;
+	}
+
+	.info > p {
+		font-size: 1.25rem;
+	}
+
+	.media {
+		display: flex;
+		flex-direction: column;
+		max-height: 60vh;
+	}
+
+	.image-wrapper {
+		width: 100%;
+	}
+
+	.image-wrapper img {
+		display: block;
+		width: 100%;
+		height: auto;
+		max-height: 70vh;
+		object-fit: contain;
+	}
+</style>
