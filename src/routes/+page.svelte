@@ -45,7 +45,13 @@
 			{/if}
 		</div>
 
-		<button type="button" class="reload-btn" disabled={loading} onclick={reload}>
+		<button
+			type="button"
+			class="reload-btn"
+			aria-label="Get a random cat"
+			disabled={loading}
+			onclick={reload}
+		>
 			🔄 New cat
 		</button>
 	</div>
@@ -70,18 +76,19 @@
 	.media {
 		display: flex;
 		flex-direction: column;
-		max-height: 60vh;
+		gap: 1rem;
 	}
 
 	.image-wrapper {
-		width: 100%;
+		border-radius: 4px;
+		overflow: hidden;
 	}
 
 	.image-wrapper img {
 		display: block;
 		width: 100%;
 		height: auto;
-		max-height: 70vh;
+		max-height: 60vh;
 		object-fit: contain;
 	}
 </style>

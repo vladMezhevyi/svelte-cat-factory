@@ -8,7 +8,7 @@ export const load: PageLoad = async ({ fetch, depends }) => {
 	try {
 		const cat = await catApi.getRandomCat(fetch);
 		return { cat };
-	} catch {
-		return { cat: null };
+	} catch (err) {
+		return { cat: null, error: err as Error };
 	}
 };
