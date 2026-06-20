@@ -5,3 +5,7 @@ export interface Cat {
 	mimetype?: string;
 	created_at: string;
 }
+
+export interface CatsCountResponse {
+	count: number;
+}
