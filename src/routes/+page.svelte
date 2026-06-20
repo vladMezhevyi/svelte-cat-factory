@@ -1,9 +1,16 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
+	import { catApi } from '$lib/api/cat.js';
 	import { CAT_RANDOM_DEP } from '$lib/constants/deps.js';
+	import { createQuery } from '@tanstack/svelte-query';
 
 	const { data } = $props();
 	let loading = $state<boolean>(false);
+
+	const query = createQuery(() => ({
+		queryKey: ['cats-count'],
+		queryFn: () => catApi.getCatsCount()
+	}));
 
 	const reload = (): void => {
 		loading = true;
@@ -16,11 +23,17 @@
 		<p>A random cat, every time.</p>
 		<p>Because the internet can never have enough cats.</p>
 
-		<div class="stats">
-			<span>🐾</span>
-			<b>12,384</b>
-			<span>cats available</span>
-		</div>
+		{#if query.isLoading}
+			<div>Loading stats...</div>
+		{:else if query.isError}
+			<div>Error: {query.error.message}</div>
+		{:else if query.isSuccess}
+			<div class="stats">
+				<span>🐾</span>
+				<b>{query.data.count}</b>
+				<span>cats available</span>
+			</div>
+		{/if}
 	</article>
 
 	<div class="media">
