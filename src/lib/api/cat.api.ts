@@ -8,7 +8,7 @@ class CatApi {
 	protected readonly nativeFetch: Fetch = fetch;
 
 	getRandomCat = async (fetch?: Fetch): Promise<Cat> => {
-		const res = await this.resolveFetch(`${this.apiUrl}/cat?json=true`, undefined, fetch);
+		const res = await this.resolveFetch(`${this.apiUrl}/cat`, undefined, fetch);
 		if (!res.ok) throw new Error(`Failed to fetch random cat: ${res.status}`);
 		return res.json();
 	};
@@ -25,8 +25,24 @@ class CatApi {
 		fetch?: Fetch
 	): Promise<Response> {
 		const resolvedFetch = fetch ?? this.nativeFetch;
+		return this.intercept(resolvedFetch)(input, init);
+	}
 
-		return resolvedFetch(input, init);
+	private intercept(fetch: Fetch): Fetch {
+		return (input, init) => {
+			const url = input.toString();
+			const headers = new Headers(init?.headers);
+
+			if (this.mustAppendHeader(url)) {
+				headers.append('Accept', 'application/json');
+			}
+
+			return fetch(input, { ...init, headers });
+		};
+	}
+
+	private mustAppendHeader(url: string): boolean {
+		return url.includes('/cat') && !url.includes('/api');
 	}
 }
 
