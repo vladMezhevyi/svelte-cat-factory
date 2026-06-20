@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
-	import { catApi } from '$lib/api/cat.js';
+	import { catsCountQueryOptions } from '$lib/api/cat.queries.js';
 	import { CAT_RANDOM_DEP } from '$lib/constants/deps.js';
 	import { createQuery } from '@tanstack/svelte-query';
 
 	const { data } = $props();
 	let loading = $state<boolean>(false);
 
-	const query = createQuery(() => ({
-		queryKey: ['cats-count'],
-		queryFn: () => catApi.getCatsCount()
-	}));
+	const query = createQuery(() => catsCountQueryOptions);
 
 	const reload = (): void => {
 		loading = true;
@@ -75,6 +72,10 @@
 
 	.info > p {
 		font-size: 1.25rem;
+	}
+
+	.info > p:not(:last-child) {
+		margin-bottom: 0.5rem;
 	}
 
 	.media {

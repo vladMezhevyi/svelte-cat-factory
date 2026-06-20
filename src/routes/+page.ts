@@ -1,4 +1,4 @@
-import { catApi } from '$lib/api/cat';
+import { catApi } from '$lib/api/cat.api';
 import { CAT_RANDOM_DEP } from '$lib/constants/deps';
 import type { PageLoad } from './$types';
 
