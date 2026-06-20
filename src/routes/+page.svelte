@@ -96,4 +96,19 @@
 		max-height: 60vh;
 		object-fit: contain;
 	}
+
+	@media (max-width: 768px) {
+		.container {
+			grid-template-columns: 1fr;
+			grid-template-rows: min-content 1fr;
+			gap: 1rem;
+			max-width: 425px;
+			margin: 0 auto;
+			padding: 2rem 1rem;
+		}
+
+		.image-wrapper img {
+			max-height: none;
+		}
+	}
 </style>
