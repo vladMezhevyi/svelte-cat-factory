@@ -1,5 +1,5 @@
 import { PUBLIC_API_URL } from '$env/static/public';
-import type { Cat, CatsCountResponse } from '$lib/types/cat';
+import type { Cat, CatFilters, CatsCountResponse } from '$lib/types/cat';
 
 type Fetch = typeof globalThis.fetch;
 
@@ -7,8 +7,29 @@ class CatApi {
 	private readonly apiUrl = PUBLIC_API_URL;
 	protected readonly nativeFetch: Fetch = fetch;
 
-	getRandomCat = async (fetch?: Fetch): Promise<Cat> => {
-		const res = await this.resolveFetch(`${this.apiUrl}/cat`, undefined, fetch);
+	getCat = async (
+		catId?: string,
+		filters?: CatFilters,
+		signal?: AbortSignal,
+		fetch?: Fetch
+	): Promise<Cat> => {
+		// TODO: Remove fake delay
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
+		const params = new URLSearchParams();
+		if (filters?.type) params.set('type', filters.type);
+
+		const queryParams = params.toString();
+		const url = `${this.apiUrl}/cat${catId ? `/${catId}` : ''}${queryParams ? `?${queryParams}` : ''}`;
+
+		const res = await this.resolveFetch(url, { signal }, fetch);
+		if (!res.ok) throw new Error(`Failed to fetch a cat: ${res.status}`);
+
+		return res.json();
+	};
+
+	getRandomCat = async (signal?: AbortSignal, fetch?: Fetch): Promise<Cat> => {
+		const res = await this.resolveFetch(`${this.apiUrl}/cat`, { signal }, fetch);
 		if (!res.ok) throw new Error(`Failed to fetch random cat: ${res.status}`);
 		return res.json();
 	};
@@ -16,6 +37,23 @@ class CatApi {
 	getCatsCount = async (fetch?: Fetch): Promise<CatsCountResponse> => {
 		const res = await this.resolveFetch(`${this.apiUrl}/api/count`, undefined, fetch);
 		if (!res.ok) throw new Error(`Failed to fetch cats count: ${res.status}`);
+		return res.json();
+	};
+
+	getCatById = async (
+		catId: string,
+		filters?: CatFilters,
+		signal?: AbortSignal,
+		fetch?: Fetch
+	): Promise<Cat> => {
+		const params = new URLSearchParams();
+		if (filters?.type) params.set('type', filters.type);
+
+		const queryParams = params.toString();
+		const url = `${this.apiUrl}/cat/${catId}${queryParams ? `?${queryParams}` : ''}`;
+
+		const res = await this.resolveFetch(url, { signal }, fetch);
+		if (!res.ok) throw new Error(`Failed to fetch cat: ${res.status}`);
 		return res.json();
 	};
 

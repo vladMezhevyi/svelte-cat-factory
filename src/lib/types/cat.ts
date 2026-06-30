@@ -9,3 +9,15 @@ export interface Cat {
 export interface CatsCountResponse {
 	count: number;
 }
+export const CatType = {
+	Square: 'square',
+	Medium: 'medium',
+	Small: 'small',
+	XSmall: 'xsmall'
+} as const;
+
+export type CatType = (typeof CatType)[keyof typeof CatType];
+
+export interface CatFilters {
+	type?: CatType;
+}
