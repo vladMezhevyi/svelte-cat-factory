@@ -1,3 +1,3 @@
 export const QUERY_KEYS = {
-	catsCount: ['cats-count']
+  catsCount: ['cats-count']
 } as const;

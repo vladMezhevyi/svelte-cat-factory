@@ -3,7 +3,7 @@ import { queryOptions } from '@tanstack/svelte-query';
 import { catApi } from './cat.api';
 
 export const catsCountQueryOptions = queryOptions({
-	queryKey: QUERY_KEYS.catsCount,
-	queryFn: () => catApi.getCatsCount(),
-	staleTime: Infinity
+  queryKey: QUERY_KEYS.catsCount,
+  queryFn: () => catApi.getCatsCount(),
+  staleTime: Infinity
 });
