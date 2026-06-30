@@ -19,5 +19,5 @@ export const CatType = {
 export type CatType = (typeof CatType)[keyof typeof CatType];
 
 export interface CatFilters {
-	type?: CatType;
+	type?: CatType | null;
 }

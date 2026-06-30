@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { resolve } from '$app/paths';
 	import { catApi } from '$lib/api/cat.api';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
-	import { CatType } from '$lib/types/cat';
+	import { CatType, type Cat, type CatFilters } from '$lib/types/cat';
+	import Filters from './Filters.svelte';
 
-	interface GotoParams {
-		id?: string;
-		type?: CatType;
+	interface GotoParams extends CatFilters {
+		id?: string | null;
 	}
 
 	const queryClient = useQueryClient();
@@ -24,18 +24,23 @@
 
 	const query = createQuery(() => ({
 		queryKey: ['cat', id, type] as const,
-		queryFn: ({ signal }) => {
-			const key = ['cat', id, type];
-			console.log('Query triggered', key);
-			return catApi.getCat(id, { type }, signal);
-		},
+		queryFn: ({ signal }) => catApi.getCat(id, { type }, signal),
 		enabled: !!id,
-		staleTime: Infinity
+		staleTime: Infinity, // Don't refetch on background
+		gcTime: 60 * 1000 // Delete cached objects after 1 minute
 	}));
 
-	const types = Object.values(CatType);
+	const shuffleCat = createMutation(() => ({
+		mutationFn: () => catApi.getCat(undefined, { type }),
+		onSuccess: (cat: Cat) => {
+			queryClient.setQueryData(['cat', cat.id, type], cat);
+			updateUrl({ id: cat.id });
+		}
+	}));
 
-	$effect(() => console.log('Cat: ', query.data));
+	let disabled = $derived(query.isPending || shuffleCat.isPending);
+
+	$effect(() => console.log('Params: ', { id, type }));
 
 	$effect(() => {
 		if (id) return;
@@ -59,11 +64,25 @@
 		return () => controller.abort();
 	});
 
+	const setOrDelete = (
+		params: URLSearchParams,
+		key: string,
+		value: string | null | undefined
+	): void => {
+		if (value === undefined) return;
+		if (value === null) {
+			params.delete(key);
+			return;
+		}
+
+		params.set(key, value);
+	};
+
 	const updateUrl = (next: GotoParams): void => {
 		const params = new SvelteURLSearchParams(page.url.searchParams);
 
-		if (next.id) params.set('id', next.id);
-		if (next.type) params.set('type', next.type);
+		setOrDelete(params, 'id', next.id);
+		setOrDelete(params, 'type', next.type);
 
 		goto(resolve(`/cat?${params.toString()}`), {
 			replaceState: true,
@@ -75,11 +94,11 @@
 
 <section class="container">
 	<div class="filters">
-		<select value={type} onchange={(e) => updateUrl({ type: e.currentTarget.value as CatType })}>
-			{#each types as type (type)}
-				<option value={type}>{type}</option>
-			{/each}
-		</select>
+		<button type="button" {disabled} onclick={() => shuffleCat.mutate()}>
+			{shuffleCat.isPending ? 'Shuffling...' : 'New random cat'}
+		</button>
+
+		<Filters {type} {disabled} onFiltersChange={(filters) => updateUrl(filters)} />
 	</div>
 
 	{#if bootstrapping}
