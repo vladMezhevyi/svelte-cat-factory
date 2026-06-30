@@ -1,7 +1,8 @@
 <script lang="ts">
-  import type { ResolvedPathname } from '$app/types';
-  import { resolve } from '$app/paths';
-  import { page } from '$app/state';
+	import type { ResolvedPathname } from '$app/types';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { preserveSearch } from '$lib/attachments/preserve-search.svelte';
 
   interface NavItem {
     label: string;
@@ -13,26 +14,27 @@
     { label: 'Cat', route: resolve('/cat') }
   ];
 
-  function isCurrent(path: ResolvedPathname): boolean {
-    return page.url.pathname === path;
-  }
+	const isCurrent = (path: ResolvedPathname): boolean => {
+		return page.url.pathname === path;
+	};
 </script>
 
 <header class="header">
   <a href={resolve('/')} class="logo">Cat Factory</a>
 
-  <nav class="nav">
-    {#each navItems as item (item.route)}
-      <a
-        href={item.route}
-        class="nav-link"
-        class:active={isCurrent(item.route)}
-        aria-current={isCurrent(item.route)}
-      >
-        {item.label}
-      </a>
-    {/each}
-  </nav>
+	<nav class="nav">
+		{#each navItems as item (item.route)}
+			<a
+				{@attach preserveSearch(item.route)}
+				href={item.route}
+				class="nav-link"
+				class:active={isCurrent(item.route)}
+				aria-current={isCurrent(item.route)}
+			>
+				{item.label}
+			</a>
+		{/each}
+	</nav>
 </header>
 
 <style>

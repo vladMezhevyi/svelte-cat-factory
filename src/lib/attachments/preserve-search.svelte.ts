@@ -10,5 +10,10 @@ export const preserveSearch =
     const handleClick = (e: MouseEvent): void => {
       // Let modifier-key/middle clicks behave normally (open in new tab, etc...)
       if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (isCurrent) e.preventDefault();
     };
+
+    element.addEventListener('click', handleClick);
+
+    return () => element.removeEventListener('click', handleClick);
   };
