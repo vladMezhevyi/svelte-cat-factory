@@ -25,7 +25,7 @@ export const CatFilter = {
   Mono: 'mono',
   Negate: 'negate',
   Custom: 'custom'
-};
+} as const;
 
 export type CatFilter = (typeof CatFilter)[keyof typeof CatFilter];
 

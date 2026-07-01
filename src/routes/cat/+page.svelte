@@ -8,7 +8,8 @@
   import { CatFilter, CatType, type Cat, type CatFilters } from '$lib/types/cat.types';
   import Filters from './Filters.svelte';
   import { onMount } from 'svelte';
-  import { isCatTypeValid } from '$lib/validators/cat.validators';
+  import { isCatFilterValid, isCatTypeValid } from '$lib/validators/cat.validators';
+  import ShuffleBtn from './ShuffleBtn.svelte';
 
   interface CatParams extends CatFilters {
     id?: string | null;
@@ -92,8 +93,18 @@
   };
 
   onMount(() => {
+    const invalidParams: CatFilters = {};
+
     if (!isCatTypeValid(type)) {
-      updateUrl({ type: null });
+      invalidParams.type = null;
+    }
+
+    if (!isCatFilterValid(filter)) {
+      invalidParams.filter = null;
+    }
+
+    if (Object.keys(invalidParams).length) {
+      updateUrl(invalidParams);
     }
 
     const controller = new AbortController();
@@ -106,23 +117,59 @@
 </script>
 
 <section class="container">
-  <div class="filters">
-    <button type="button" {disabled} onclick={() => shuffleCat.mutate()}>
-      {shuffleCat.isPending ? 'Shuffling...' : 'New random cat'}
-    </button>
-
-    <Filters {type} {filter} {disabled} onFiltersChange={(filters) => updateUrl(filters)} />
+  <div class="preview">
+    {#if bootstrapping}
+      <p class="pending">Finding a cat...</p>
+    {:else if bootstrapError}
+      <p class="error" role="alert">{bootstrapError}</p>
+    {:else if query.isPending}
+      <p class="pending">Loading a cat...</p>
+    {:else if query.isError}
+      <p class="error" role="alert">{query.error.message}</p>
+    {:else if query.data}
+      <img src={query.data.url} alt={query.data.tags?.join(', ') ?? 'cat'} />
+    {/if}
   </div>
 
-  {#if bootstrapping}
-    <p>Finding a cat...</p>
-  {:else if bootstrapError}
-    <p role="alert">{bootstrapError}</p>
-  {:else if query.isPending}
-    <p>Loading a cat...</p>
-  {:else if query.isError}
-    <p role="alert">{query.error.message}</p>
-  {:else if query.data}
-    <img src={query.data.url} alt={query.data.tags?.join(', ') ?? 'cat'} />
-  {/if}
+  <div class="filters">
+    <ShuffleBtn loading={shuffleCat.isPending} {disabled} onclick={() => shuffleCat.mutate()} />
+    <Filters {type} {filter} {disabled} onFiltersChange={(filters) => updateUrl(filters)} />
+  </div>
 </section>
+
+<style>
+  .container {
+    flex: 1;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+
+  .preview {
+    justify-self: center;
+    align-self: center;
+  }
+
+  .pending,
+  .error {
+    font-size: 1.25rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .pending {
+    background-color: lightblue;
+  }
+
+  .error {
+    background-color: red;
+    color: #fff;
+  }
+
+  .preview img {
+    display: block;
+    height: auto;
+    max-width: 100%;
+  }
+</style>
