@@ -17,7 +17,9 @@ class CatApi {
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     const params = new URLSearchParams();
+
     if (filters?.type) params.set('type', filters.type);
+    if (filters?.filter) params.set('filter', filters.filter);
 
     const queryParams = params.toString();
     const url = `${this.apiUrl}/cat${catId ? `/${catId}` : ''}${queryParams ? `?${queryParams}` : ''}`;

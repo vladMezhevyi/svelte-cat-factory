@@ -9,6 +9,8 @@ export interface Cat {
 export interface CatsCountResponse {
   count: number;
 }
+
+// Type
 export const CatType = {
   Square: 'square',
   Medium: 'medium',
@@ -18,6 +20,17 @@ export const CatType = {
 
 export type CatType = (typeof CatType)[keyof typeof CatType];
 
+// Filter
+export const CatFilter = {
+  Mono: 'mono',
+  Negate: 'negate',
+  Custom: 'custom'
+};
+
+export type CatFilter = (typeof CatFilter)[keyof typeof CatFilter];
+
+// Filters
 export interface CatFilters {
   type?: CatType | null;
+  filter?: CatFilter | null;
 }

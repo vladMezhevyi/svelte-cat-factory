@@ -5,7 +5,7 @@
   import { resolve } from '$app/paths';
   import { catApi } from '$lib/api/cat.api';
   import { SvelteURLSearchParams } from 'svelte/reactivity';
-  import { CatType, type Cat, type CatFilters } from '$lib/types/cat';
+  import { CatFilter, CatType, type Cat, type CatFilters } from '$lib/types/cat.types';
   import Filters from './Filters.svelte';
   import { onMount } from 'svelte';
   import { isCatTypeValid } from '$lib/validators/cat.validators';
@@ -23,10 +23,11 @@
 
   let id = $derived(params.get('id') ?? undefined);
   let type = $derived<CatType | undefined>((params.get('type') as CatType) ?? undefined);
+  let filter = $derived<CatFilter | undefined>(params.get('filter' as CatType) ?? undefined);
 
   const query = createQuery(() => ({
-    queryKey: ['cat', id, type] as const,
-    queryFn: ({ signal }) => catApi.getCat(id, { type }, signal),
+    queryKey: ['cat', id, type, filter] as const,
+    queryFn: ({ signal }) => catApi.getCat(id, { type, filter }, signal),
     retry: false,
     enabled: !!id,
     staleTime: Infinity, // Don't refetch on background
@@ -34,16 +35,16 @@
   }));
 
   const shuffleCat = createMutation(() => ({
-    mutationFn: () => catApi.getCat(undefined, { type }),
+    mutationFn: () => catApi.getCat(undefined, { type, filter }),
     onSuccess: (cat: Cat) => {
-      queryClient.setQueryData(['cat', cat.id, type], cat);
+      queryClient.setQueryData(['cat', cat.id, type, filter], cat);
       updateUrl({ id: cat.id });
     }
   }));
 
   let disabled = $derived(query.isPending || shuffleCat.isPending);
 
-  $effect(() => console.log('Params: ', { id, type }));
+  $effect(() => console.log('Params: ', { id, type, filter }));
 
   const bootstrap = (controller: AbortController): void => {
     bootstrapping = true;
@@ -52,7 +53,7 @@
     catApi
       .getCat(undefined, undefined, controller.signal)
       .then((cat) => {
-        queryClient.setQueryData(['cat', cat.id, type], cat);
+        queryClient.setQueryData(['cat', cat.id, type, filter], cat);
         updateUrl({ id: cat.id });
       })
       .catch((error) => {
@@ -81,6 +82,7 @@
 
     setOrDelete(params, 'id', next.id);
     setOrDelete(params, 'type', next.type);
+    setOrDelete(params, 'filter', next.filter);
 
     goto(resolve(`/cat?${params.toString()}`), {
       replaceState: true,
@@ -109,7 +111,7 @@
       {shuffleCat.isPending ? 'Shuffling...' : 'New random cat'}
     </button>
 
-    <Filters {type} {disabled} onFiltersChange={(filters) => updateUrl(filters)} />
+    <Filters {type} {filter} {disabled} onFiltersChange={(filters) => updateUrl(filters)} />
   </div>
 
   {#if bootstrapping}
