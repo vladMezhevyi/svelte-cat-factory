@@ -14,7 +14,7 @@ class CatApi {
     fetch?: Fetch
   ): Promise<Cat> => {
     // TODO: Remove fake delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     const params = new URLSearchParams();
     if (filters?.type) params.set('type', filters.type);

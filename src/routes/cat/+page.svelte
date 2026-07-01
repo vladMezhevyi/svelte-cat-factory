@@ -7,8 +7,10 @@
   import { SvelteURLSearchParams } from 'svelte/reactivity';
   import { CatType, type Cat, type CatFilters } from '$lib/types/cat';
   import Filters from './Filters.svelte';
+  import { onMount } from 'svelte';
+  import { isCatTypeValid } from '$lib/validators/cat.validators';
 
-  interface GotoParams extends CatFilters {
+  interface CatParams extends CatFilters {
     id?: string | null;
   }
 
@@ -20,11 +22,12 @@
   let params = $derived(page.url.searchParams);
 
   let id = $derived(params.get('id') ?? undefined);
-  let type = $derived((params.get('type') as CatType) ?? undefined);
+  let type = $derived<CatType | undefined>((params.get('type') as CatType) ?? undefined);
 
   const query = createQuery(() => ({
     queryKey: ['cat', id, type] as const,
     queryFn: ({ signal }) => catApi.getCat(id, { type }, signal),
+    retry: false,
     enabled: !!id,
     staleTime: Infinity, // Don't refetch on background
     gcTime: 60 * 1000 // Delete cached objects after 1 minute
@@ -42,10 +45,7 @@
 
   $effect(() => console.log('Params: ', { id, type }));
 
-  $effect(() => {
-    if (id) return;
-
-    const controller = new AbortController();
+  const bootstrap = (controller: AbortController): void => {
     bootstrapping = true;
     bootstrapError = null;
 
@@ -60,9 +60,7 @@
         bootstrapError = error instanceof Error ? error.message : 'Failed to load a cat';
       })
       .finally(() => (bootstrapping = false));
-
-    return () => controller.abort();
-  });
+  };
 
   const setOrDelete = (
     params: URLSearchParams,
@@ -78,7 +76,7 @@
     params.set(key, value);
   };
 
-  const updateUrl = (next: GotoParams): void => {
+  const updateUrl = (next: CatParams): void => {
     const params = new SvelteURLSearchParams(page.url.searchParams);
 
     setOrDelete(params, 'id', next.id);
@@ -90,6 +88,19 @@
       keepFocus: true
     });
   };
+
+  onMount(() => {
+    if (!isCatTypeValid(type)) {
+      updateUrl({ type: null });
+    }
+
+    const controller = new AbortController();
+    if (!id) {
+      bootstrap(controller);
+    }
+
+    return () => controller.abort();
+  });
 </script>
 
 <section class="container">
