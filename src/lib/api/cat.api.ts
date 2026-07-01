@@ -1,5 +1,5 @@
 import { PUBLIC_API_URL } from '$env/static/public';
-import type { Cat, CatFilters, CatsCountResponse } from '$lib/types/cat';
+import type { Cat, CatFilters, CatsCountResponse } from '$lib/types/cat.types';
 
 type Fetch = typeof globalThis.fetch;
 

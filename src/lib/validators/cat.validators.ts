@@ -1,5 +1,5 @@
 import { catTypes } from '$lib/constants/cat.constants';
-import type { CatType } from '$lib/types/cat';
+import type { CatType } from '$lib/types/cat.types';
 
 export const isCatTypeValid = (type: CatType | string | undefined | null): type is CatType => {
   if (!type) return false;
