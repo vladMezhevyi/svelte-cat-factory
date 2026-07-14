@@ -23,27 +23,13 @@
 </svelte:head>
 
 <QueryClientProvider client={queryClient}>
-  <div class="wrapper">
+  <div class="flex flex-col min-h-dvh">
     <Header />
 
-    <main class="main">
+    <main class="flex-1 flex flex-col">
       {@render children()}
     </main>
 
     <Footer />
   </div>
 </QueryClientProvider>
-
-<style>
-  .wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100dvh;
-  }
-
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-</style>

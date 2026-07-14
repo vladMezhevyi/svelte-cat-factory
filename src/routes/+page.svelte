@@ -1,11 +1,16 @@
 <script lang="ts">
   import { invalidate } from '$app/navigation';
   import { catsCountQueryOptions } from '$lib/api/cat.queries.js';
+  import Button from '$lib/components/ui/button/button.svelte';
+  import Spinner from '$lib/components/ui/spinner/spinner.svelte';
   import { CAT_RANDOM_DEP } from '$lib/constants/deps.js';
   import { createQuery } from '@tanstack/svelte-query';
+  import { MaskSadIcon, PawPrintIcon } from 'phosphor-svelte';
 
   const { data } = $props();
   let loading = $state<boolean>(false);
+
+  let reloadLabel = $derived(loading ? 'Loading' : 'New Cat');
 
   const query = createQuery(() => catsCountQueryOptions);
 
@@ -19,96 +24,54 @@
   <title>Cat Factory</title>
 </svelte:head>
 
-<section class="container">
-  <article class="info">
-    <p>A random cat, every time.</p>
-    <p>Because the internet can never have enough cats.</p>
+<section
+  class="sm:flex-1 py-8 px-4 my-auto sm:my-0 grid grid-cols-1 sm:grid-cols-2 gap-12 sm:gap-8 items-center justify-items-center"
+>
+  <article>
+    <div class="text-lg sm:text-xl not-last:mb-4">
+      <p>A random cat, every time.</p>
+      <p>Because the internet can never have enough cats.</p>
+    </div>
 
-    {#if query.isLoading}
-      <div>Loading stats...</div>
-    {:else if query.isError}
-      <div>Error: {query.error.message}</div>
-    {:else if query.isSuccess}
-      <div class="stats">
-        <span>🐾</span>
-        <b>{query.data.count}</b>
-        <span>cats available</span>
-      </div>
-    {/if}
+    <div class="text-lg" aria-live="polite" aria-atomic="true">
+      {#if query.isPending}
+        <p class="flex items-center gap-2">
+          <Spinner aria-hidden="true" />
+          <span>Loading stats</span>
+        </p>
+      {:else if query.isError}
+        <p class="flex items-center gap-2 text-destructive">
+          <MaskSadIcon aria-hidden="true" />
+          Couldn't count the cats.
+        </p>
+      {:else if query.isSuccess}
+        <div class="flex items-center gap-2">
+          <PawPrintIcon aria-hidden="true" class="text-2xl text-primary" />
+          <p>
+            <b>{query.data.count}</b> cats available
+          </p>
+        </div>
+      {/if}
+    </div>
   </article>
 
-  <div class="media">
-    <div class="image-wrapper">
+  <div class="flex flex-col gap-4">
+    <div aria-live="polite" aria-atomic="true">
       {#if data.cat}
         <img src={data.cat.url} alt="Random cat" />
       {:else}
-        <span>Failed to load an image</span>
+        <p class="flex items-baseline gap-2 text-lg text-destructive">
+          <MaskSadIcon aria-hidden="true" />
+          Couldn't load the image. Might be a shy cat, might be the network.
+        </p>
       {/if}
     </div>
 
-    <button
-      type="button"
-      class="reload-btn"
-      aria-label="Get a random cat"
-      disabled={loading}
-      onclick={reload}
-    >
-      🔄 New cat
-    </button>
+    <Button disabled={loading} onclick={reload}>
+      {#if loading}
+        <Spinner />
+      {/if}
+      {reloadLabel}
+    </Button>
   </div>
 </section>
-
-<style>
-  .container {
-    flex: 1;
-    padding: 1rem;
-
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-    align-items: center;
-    justify-items: center;
-  }
-
-  .info > p {
-    font-size: 1.25rem;
-  }
-
-  .info > p:not(:last-child) {
-    margin-bottom: 0.5rem;
-  }
-
-  .media {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .image-wrapper {
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .image-wrapper img {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: 60vh;
-    object-fit: contain;
-  }
-
-  @media (max-width: 768px) {
-    .container {
-      grid-template-columns: 1fr;
-      grid-template-rows: min-content 1fr;
-      gap: 1rem;
-      max-width: 425px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-
-    .image-wrapper img {
-      max-height: none;
-    }
-  }
-</style>
